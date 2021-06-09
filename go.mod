@@ -1,3 +1,3 @@
-module github.com/internet-computer/leb128
+module github.com/allusion-be/leb128
 
-go 1.15
+go 1.16

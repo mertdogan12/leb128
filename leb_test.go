@@ -2,8 +2,9 @@ package leb128_test
 
 import (
 	"fmt"
-	"github.com/internet-computer/leb128"
 	"testing"
+
+	"github.com/allusion-be/leb128"
 )
 
 func ExampleFromUInt() {

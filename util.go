@@ -35,3 +35,29 @@ func bytes2bit7(data []byte) []byte {
 	}
 	return b7s
 }
+
+func add1(data []byte) []byte {
+	for i := range data {
+		j := len(data) - i - 1
+		if data[j] == 0xFF {
+			data[j] = 0x00
+			if i == 0 {
+				data = append([]byte{0x01}, data...)
+			}
+		} else {
+			data[j] += 0x01
+			break
+		}
+	}
+	return data
+}
+
+func add1high(data []byte) []byte {
+	for i := range data {
+		if i == len(data)-1 {
+			break
+		}
+		data[i] |= 0x80
+	}
+	return data
+}

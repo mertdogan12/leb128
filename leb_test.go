@@ -58,8 +58,14 @@ const (
 )
 
 func TestFromBigUInt(t *testing.T) {
-	bi := big.NewInt(624485)
-	leb128.FromBigUInt(*bi)
+	var (
+		v  = 624485
+		bi = big.NewInt(624485)
+		n  = leb128.FromBigUInt(*bi)
+	)
+	if n.ToUInt() != uint(v) {
+		t.Error(n)
+	}
 }
 
 func TestFromInt(t *testing.T) {
@@ -71,6 +77,18 @@ func TestFromInt(t *testing.T) {
 			t.Error(-i)
 		}
 	}
+}
+
+func TestFromBigInt(t *testing.T) {
+	var (
+		v  = -123456
+		bi = big.NewInt(int64(v))
+		n  = leb128.FromBigInt(*bi)
+	)
+	if n.ToInt() != v {
+		t.Error(n)
+	}
+
 }
 
 func TestFromUInt(t *testing.T) {

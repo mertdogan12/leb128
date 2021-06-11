@@ -15,22 +15,34 @@ type (
 
 // FromUInt encodes an unsigned big.Int.
 func FromBigUInt(n big.Int) LEB128 {
-	return toLEB128(bytes2bit7(n.Bytes()))
+	return add1high(bytes2bit7(n.Bytes()))
 }
 
 // FromUInt encodes an unsigned integer.
 func FromUInt(n uint) LEB128 {
-	return toLEB128(uint2bit7(n))
+	return add1high(uint2bit7(n))
 }
 
-func toLEB128(data []byte) LEB128 {
-	for i := range data {
-		if i == len(data)-1 {
-			break
+// FromBigInt encodes a signed big.Int.
+func FromBigInt(n big.Int) SLEB128 {
+	var (
+		bs = n.Bytes()
+	)
+	for i := range bs {
+		if i == 0 {
+			var (
+				s = int(len(bs) * 8 / 7)
+				z = len(bs)*8 - s*7
+			)
+			bs[i] ^= 0xFF
+			bs[i] <<= z
+			bs[i] >>= z
+		} else {
+			bs[i] ^= 0xFF
 		}
-		data[i] |= 0x80
 	}
-	return data
+	bs = add1high(bytes2bit7(add1(bs)))
+	return bs
 }
 
 // FromInt encodes a signed integer.

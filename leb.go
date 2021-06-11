@@ -2,6 +2,10 @@
 // compression used to store an arbitrarily large integer in a small number of bytes.
 package leb128
 
+import (
+	"math/big"
+)
+
 type (
 	// LEB128 represents an unsigned number encoded using (unsigned) LEB128.
 	LEB128 []byte
@@ -9,18 +13,24 @@ type (
 	SLEB128 []byte
 )
 
+// FromUInt encodes an unsigned big.Int.
+func FromBigUInt(n big.Int) LEB128 {
+	return toLEB128(bytes2bit7(n.Bytes()))
+}
+
 // FromUInt encodes an unsigned integer.
 func FromUInt(n uint) LEB128 {
-	leb := make([]byte, 0)
-	for n != 0x00 {
-		b := byte(n & 0x7F)
-		n >>= 7
-		if n != 0x00 {
-			b |= 0x80
+	return toLEB128(uint2bit7(n))
+}
+
+func toLEB128(data []byte) LEB128 {
+	for i := range data {
+		if i == len(data)-1 {
+			break
 		}
-		leb = append(leb, b)
+		data[i] |= 0x80
 	}
-	return leb
+	return data
 }
 
 // FromInt encodes a signed integer.

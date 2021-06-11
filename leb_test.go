@@ -2,6 +2,7 @@ package leb128_test
 
 import (
 	"fmt"
+	"math/big"
 	"testing"
 
 	"github.com/allusion-be/leb128"
@@ -55,6 +56,11 @@ const (
 	MaxInt  = int(MaxUint >> 1)
 	MinInt  = -MaxInt - 1
 )
+
+func TestFromBigUInt(t *testing.T) {
+	bi := big.NewInt(624485)
+	leb128.FromBigUInt(*bi)
+}
 
 func TestFromInt(t *testing.T) {
 	for i := MinInt + 1; i < -1; i /= 10 {

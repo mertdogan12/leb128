@@ -1,88 +1,57 @@
-// Package leb128 or Little Endian Base 128 is a form of variable-length code
-// compression used to store an arbitrarily large integer in a small number of bytes.
 package leb128
 
 import (
+	"bytes"
+	"fmt"
 	"math/big"
 )
 
-type (
-	// LEB128 represents an unsigned number encoded using (unsigned) LEB128.
-	LEB128 []byte
-	// SLEB128 represents a signed number encoded using signed LEB128.
-	SLEB128 []byte
+type LEB128 []byte
+
+var (
+	x00 = big.NewInt(0x00)
+	x7F = big.NewInt(0x7F)
+	x80 = big.NewInt(0x80)
 )
 
-// FromUInt encodes an unsigned big.Int.
-func FromBigUInt(n big.Int) LEB128 {
-	return add1high(bytes2bit7(n.Bytes()))
-}
-
-// FromUInt encodes an unsigned integer.
-func FromUInt(n uint) LEB128 {
-	return add1high(uint2bit7(n))
-}
-
-// FromBigInt encodes a signed big.Int.
-func FromBigInt(n big.Int) SLEB128 {
-	var (
-		bs = n.Bytes()
-	)
-	for i := range bs {
-		if i == 0 {
-			var (
-				s = int(len(bs) * 8 / 7)
-				z = len(bs)*8 - s*7
-			)
-			bs[i] ^= 0xFF
-			bs[i] <<= z
-			bs[i] >>= z
+func EncodeUnsigned(n *big.Int) (LEB128, error) {
+	if n.Cmp(big.NewInt(0)) < 0 {
+		return nil, fmt.Errorf("can not leb128 encode negative values")
+	}
+	for bs := []byte{}; ; {
+		i := new(big.Int).And(n, x7F)
+		n = n.Div(n, x80)
+		if n.Cmp(x00) == 0 {
+			b := i.Bytes()
+			if len(b) == 0 {
+				return []byte{0}, nil
+			}
+			return append(bs, b...), nil
 		} else {
-			bs[i] ^= 0xFF
+			b := new(big.Int).Or(i, x80)
+			bs = append(bs, b.Bytes()...)
 		}
 	}
-	bs = add1high(bytes2bit7(add1(bs)))
-	return bs
 }
 
-// FromInt encodes a signed integer.
-func FromInt(n int) SLEB128 {
-	leb := make([]byte, 0)
+func DecodeUnsigned(r *bytes.Reader) (*big.Int, error) {
+	var (
+		weight = big.NewInt(1)
+		value  = big.NewInt(0)
+	)
 	for {
-		var (
-			b    = byte(n & 0x7F)
-			sign = byte(n & 0x40)
-		)
-		if n >>= 7; sign == 0 && n != 0 || n != -1 && (n != 0 || sign != 0) {
-			b |= 0x80
+		b, err := r.ReadByte()
+		if err != nil {
+			return nil, err
 		}
-		leb = append(leb, b)
-		if b&0x80 == 0 {
+		value = value.Add(
+			value,
+			new(big.Int).Mul(big.NewInt(int64(b&0x7F)), weight),
+		)
+		weight = weight.Mul(weight, x80)
+		if b < 0x80 {
 			break
 		}
 	}
-	return leb
-}
-
-// ToUInt converts the byte slice back the an unsigned integer.
-func (l LEB128) ToUInt() uint {
-	var n uint
-	for i := 0; i < len(l); i++ {
-		b := uint(0x7F & l[i])
-		n |= b << (i * 7)
-	}
-	return n
-}
-
-// ToInt converts the byte slice back the a signed integer.
-func (l SLEB128) ToInt() int {
-	var n uint
-	for i := 0; i < len(l); i++ {
-		b := uint(0x7F & l[i])
-		n |= b << (i * 7)
-		if b := l[i]; b&0x80 == 0 && b&0x40 != 0 {
-			return int(n) | (^0 << ((i + 1) * 7))
-		}
-	}
-	return int(n)
+	return value, nil
 }

@@ -1,0 +1,55 @@
+package leb128
+
+import (
+	"bytes"
+	"io"
+	"math/big"
+)
+
+type SLEB128 []byte
+
+func EncodeSigned(n *big.Int) (LEB128, error) {
+	v := new(big.Int).Set(n)
+	neg := v.Sign() < 0
+	if neg {
+		v = v.Mul(v, big.NewInt(-1))
+		v = v.Add(v, big.NewInt(-1))
+	}
+	var bs []byte
+	for {
+		b := byte(v.Int64() % 0x80)
+		if neg {
+			b = 0x80 - b - 1
+		}
+		v = v.Div(v, x80)
+		if (neg && v.Sign() == 0 && b&0x40 != 0) ||
+			(!neg && v.Sign() == 0 && b&0x40 == 0) {
+			return append(bs, b), nil
+		} else {
+			bs = append(bs, b|0x80)
+		}
+	}
+}
+
+func DecodeSigned(r *bytes.Reader) (*big.Int, error) {
+	bs, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	for _, b := range bs {
+		if b < 0x80 {
+			if (b & 0x40) == 0 {
+				return DecodeUnsigned(bytes.NewReader(bs))
+			}
+			break
+		}
+	}
+	v := new(big.Int)
+	for i := len(bs) - 1; i >= 0; i-- {
+		v = v.Mul(v, x80)
+		v = v.Add(v, big.NewInt(int64(0x80-(bs[i]&0x7F)-1)))
+	}
+	v = v.Mul(v, big.NewInt(-1))
+	v = v.Add(v, big.NewInt(-1))
+	return v, nil
+}

@@ -9,22 +9,22 @@ import (
 	"github.com/allusion-be/leb128"
 )
 
-func TestUnsigned(t *testing.T) {
+func TestSigned(t *testing.T) {
 	for _, test := range []struct {
 		Hex   string
 		Value *big.Int
 	}{
-		{"00", big.NewInt(0)},
-		{"07", big.NewInt(7)},
-		{"7F", big.NewInt(127)},
-		{"E58E26", big.NewInt(624485)},
-		{"80897A", big.NewInt(2000000)},
-		{"808098F4E9B5CA6A", big.NewInt(60000000000000000)},
+		{"2A", big.NewInt(42)},
+		{"7F", big.NewInt(-1)},
+		{"C0BB78", big.NewInt(-123456)},
+		{"8089FA00", big.NewInt(2000000)},
+		{"808098F4E9B5CAEA00", big.NewInt(60000000000000000)},
 		{"EF9BAF8589CF959A92DEB7DE8A929EABB424", newInt(t, "24197857200151252728969465429440056815")},
+		{"91E4D0FAF6B0EAE5EDA1C8A1F5EDE1D4CB5B", newInt(t, "-24197857200151252728969465429440056815")},
 	} {
 		t.Run(test.Hex, func(t *testing.T) {
 			e := new(big.Int).Set(test.Value)
-			bs, err := leb128.EncodeUnsigned(e)
+			bs, err := leb128.EncodeSigned(e)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -33,7 +33,7 @@ func TestUnsigned(t *testing.T) {
 			}
 
 			d := new(big.Int).Set(test.Value)
-			bi, err := leb128.DecodeUnsigned(bytes.NewReader(bs))
+			bi, err := leb128.DecodeSigned(bytes.NewReader(bs))
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -8,20 +8,16 @@ import (
 
 type LEB128 []byte
 
-var (
-	x00 = big.NewInt(0x00)
-	x7F = big.NewInt(0x7F)
-	x80 = big.NewInt(0x80)
-)
-
 func EncodeUnsigned(n *big.Int) (LEB128, error) {
-	if n.Cmp(big.NewInt(0)) < 0 {
+	v := new(big.Int).Set(n)
+	if v.Sign() < 0 {
 		return nil, fmt.Errorf("can not leb128 encode negative values")
 	}
-	for bs := []byte{}; ; {
-		i := new(big.Int).And(n, x7F)
-		n = n.Div(n, x80)
-		if n.Cmp(x00) == 0 {
+	var bs []byte
+	for {
+		i := new(big.Int).And(v, x7F)
+		v = v.Div(v, x80)
+		if v.Cmp(x00) == 0 {
 			b := i.Bytes()
 			if len(b) == 0 {
 				return []byte{0}, nil
@@ -37,7 +33,7 @@ func EncodeUnsigned(n *big.Int) (LEB128, error) {
 func DecodeUnsigned(r *bytes.Reader) (*big.Int, error) {
 	var (
 		weight = big.NewInt(1)
-		value  = big.NewInt(0)
+		value  = new(big.Int)
 	)
 	for {
 		b, err := r.ReadByte()

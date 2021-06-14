@@ -3,6 +3,7 @@ package leb128_test
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"math/big"
 	"testing"
 
@@ -33,13 +34,43 @@ func TestUnsigned(t *testing.T) {
 			}
 
 			d := new(big.Int).Set(test.Value)
-			bi, err := leb128.DecodeUnsigned(bytes.NewReader(bs))
+			r := bytes.NewReader(bs)
+			bi, err := leb128.DecodeUnsigned(r)
 			if err != nil {
 				t.Fatal(err)
 			}
 			if bi.Cmp(d) != 0 {
 				t.Errorf("%s, \n%s\n%s", test.Hex, d, bi)
 			}
+			if r.Len() != 0 {
+				t.Error()
+			}
 		})
+	}
+}
+
+func TestUnsignedMultiple(t *testing.T) {
+	v := big.NewInt(127)
+	b, err := leb128.EncodeUnsigned(v)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var bs []byte
+	for i := 0; i < 10; i++ {
+		bs = append(bs, b...)
+	}
+	r := bytes.NewReader(bs)
+	for i := 0; i < 10; i++ {
+		bi, err := leb128.DecodeUnsigned(r)
+		if err != nil {
+			t.Error(err)
+		}
+		if bi.Cmp(v) != 0 {
+			t.Error(bi)
+		}
+	}
+	if r.Len() != 0 {
+		raw, _ := io.ReadAll(r)
+		t.Fatalf("%x", raw)
 	}
 }

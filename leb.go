@@ -6,8 +6,10 @@ import (
 	"math/big"
 )
 
+// LEB128 represents an unsigned number encoded using (unsigned) LEB128.
 type LEB128 []byte
 
+// EncodeUnsigned encodes an unsigned integer.
 func EncodeUnsigned(n *big.Int) (LEB128, error) {
 	v := new(big.Int).Set(n)
 	if v.Sign() < 0 {
@@ -30,6 +32,7 @@ func EncodeUnsigned(n *big.Int) (LEB128, error) {
 	}
 }
 
+// DecodeUnsigned converts the byte slice back to an unsigned integer.
 func DecodeUnsigned(r *bytes.Reader) (*big.Int, error) {
 	var (
 		weight = big.NewInt(1)

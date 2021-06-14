@@ -6,8 +6,10 @@ import (
 	"math/big"
 )
 
+// SLEB128 represents a signed number encoded using signed LEB128.
 type SLEB128 []byte
 
+// EncodeSigned encodes a signed integer.
 func EncodeSigned(n *big.Int) (LEB128, error) {
 	v := new(big.Int).Set(n)
 	neg := v.Sign() < 0
@@ -31,6 +33,7 @@ func EncodeSigned(n *big.Int) (LEB128, error) {
 	}
 }
 
+// DecodeSigned converts the byte slice back to a signed integer.
 func DecodeSigned(r *bytes.Reader) (*big.Int, error) {
 	bs, err := io.ReadAll(r)
 	if err != nil {

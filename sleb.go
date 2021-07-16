@@ -2,6 +2,7 @@ package leb128
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"math/big"
 )
@@ -50,6 +51,9 @@ func DecodeSigned(r *bytes.Reader) (*big.Int, error) {
 			break
 		}
 		l++
+	}
+	if l >= len(bs) {
+		return nil, fmt.Errorf("too short")
 	}
 	*r = *bytes.NewReader(bs[l+1:])
 

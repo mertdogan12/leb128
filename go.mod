@@ -1,3 +1,3 @@
-module github.com/allusion-be/leb128
+module github.com/aviate-labs/leb128
 
 go 1.16

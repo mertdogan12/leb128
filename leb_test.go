@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/allusion-be/leb128"
+	"github.com/aviate-labs/leb128"
 )
 
 func TestUnsigned(t *testing.T) {

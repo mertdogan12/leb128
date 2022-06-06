@@ -7,15 +7,17 @@ import (
 )
 
 // DecodeUnsigned converts the byte slice back to an unsigned integer.
-func DecodeUnsigned(r *bytes.Reader) (*big.Int, error) {
+func DecodeUnsigned(r *bytes.Reader) (*big.Int, int, error) {
+	n := 0
 	var (
 		weight = big.NewInt(1)
 		value  = new(big.Int)
 	)
 	for {
+		n++
 		b, err := r.ReadByte()
 		if err != nil {
-			return nil, err
+			return nil, n, err
 		}
 		value = value.Add(
 			value,
@@ -26,7 +28,7 @@ func DecodeUnsigned(r *bytes.Reader) (*big.Int, error) {
 			break
 		}
 	}
-	return value, nil
+	return value, n, nil
 }
 
 // LEB128 represents an unsigned number encoded using (unsigned) LEB128.

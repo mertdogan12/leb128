@@ -8,10 +8,10 @@ import (
 )
 
 // DecodeSigned converts the byte slice back to a signed integer.
-func DecodeSigned(r *bytes.Reader) (*big.Int, error) {
+func DecodeSigned(r *bytes.Reader) (*big.Int, int, error) {
 	bs, err := io.ReadAll(r)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	l := 0
@@ -26,7 +26,7 @@ func DecodeSigned(r *bytes.Reader) (*big.Int, error) {
 		l++
 	}
 	if l >= len(bs) {
-		return nil, fmt.Errorf("too short")
+		return nil, 0, fmt.Errorf("too short")
 	}
 	*r = *bytes.NewReader(bs[l+1:])
 
@@ -37,7 +37,7 @@ func DecodeSigned(r *bytes.Reader) (*big.Int, error) {
 	}
 	v = v.Mul(v, big.NewInt(-1))
 	v = v.Add(v, big.NewInt(-1))
-	return v, nil
+	return v, l, nil
 }
 
 // EncodeSigned encodes a signed integer.

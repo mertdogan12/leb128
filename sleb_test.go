@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/aviate-labs/leb128"
+	"github.com/mertdogan12/leb128"
 )
 
 func TestSigned(t *testing.T) {
@@ -35,7 +35,7 @@ func TestSigned(t *testing.T) {
 
 			d := new(big.Int).Set(test.Value)
 			r := bytes.NewReader(bs)
-			bi, err := leb128.DecodeSigned(r)
+			bi, _, err := leb128.DecodeSigned(r)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -61,7 +61,7 @@ func TestSignedMultiple(t *testing.T) {
 	}
 	r := bytes.NewReader(bs)
 	for i := 0; i < 10; i++ {
-		bi, err := leb128.DecodeSigned(r)
+		bi, _, err := leb128.DecodeSigned(r)
 		if err != nil {
 			t.Error(err)
 		}
@@ -78,12 +78,12 @@ func TestSignedMultiple(t *testing.T) {
 func TestSignedTooShort(t *testing.T) {
 	raw, _ := leb128.EncodeSigned(big.NewInt(128))
 	// [x80, x01]
-	b, _ := leb128.DecodeSigned(bytes.NewReader(raw))
+	b, _, _ := leb128.DecodeSigned(bytes.NewReader(raw))
 	if b.Cmp(big.NewInt(128)) != 0 {
 		t.Fatal(b)
 	}
 	// [x80]
-	if _, err := leb128.DecodeSigned(bytes.NewReader(raw[:len(raw)-2])); err == nil {
+	if _, _, err := leb128.DecodeSigned(bytes.NewReader(raw[:len(raw)-2])); err == nil {
 		t.Error()
 	}
 }

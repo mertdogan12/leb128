@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/aviate-labs/leb128"
+	"github.com/mertdogan12/leb128"
 )
 
 func TestUnsigned(t *testing.T) {
@@ -35,7 +35,7 @@ func TestUnsigned(t *testing.T) {
 
 			d := new(big.Int).Set(test.Value)
 			r := bytes.NewReader(bs)
-			bi, err := leb128.DecodeUnsigned(r)
+			bi, _, err := leb128.DecodeUnsigned(r)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -61,7 +61,7 @@ func TestUnsignedMultiple(t *testing.T) {
 	}
 	r := bytes.NewReader(bs)
 	for i := 0; i < 10; i++ {
-		bi, err := leb128.DecodeUnsigned(r)
+		bi, _, err := leb128.DecodeUnsigned(r)
 		if err != nil {
 			t.Error(err)
 		}
